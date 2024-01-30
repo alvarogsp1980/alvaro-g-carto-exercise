@@ -1,0 +1,41 @@
+# Operating System
+*.DS_Store
+Thumbs.db
+
+# Dev environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies
+/node_modules
+/vendor
+
+# Compilaiton and distribution folders
+/dist
+/tmp
+/out
+/build
+/target
+
+# Logs and DB files
+*.log
+*.sql
+*.sqlite
+
+# CI/CD tools
+/ci-cd/secrets.yaml
+
+# IDE files
+/.idea
+/.vscode
+
+# Scripts files
+/scripts/*.pyc
+
+# Terraform
+/terraform/.terraform
+*.tfstate
+*.tfstate.*
