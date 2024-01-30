@@ -15,7 +15,25 @@ steps:
     versionSpec: '>=18.10'
   displayName: 'Install Node.js'
 
-- script: |
-    npm install
-    npm run build
-  displayName: 'npm install and build'
+# - script: |
+#     copy
+#     npm install
+#     npm install -g yarn
+#     yarn install
+#     npm --prefix /simple-api run build
+#   displayName: 'npm install and build'
+
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '/simple-api'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/simple-api'
+
+- script: 'npm install'  # Ejecutar npm install en la carpeta simple-api.
+  workingDirectory: '$(Build.ArtifactStagingDirectory)/simple-api'  # Cambiar al directorio de destino antes de ejecutar el comando npm install.
+
+- script: 'yarn install'  # Ejecutar npm install en la carpeta simple-api.
+  workingDirectory: '$(Build.ArtifactStagingDirectory)/simple-api'  # Cambiar al directorio de destino antes de ejecutar el comando npm install.
+
+- script: 'yarn run start'  # Ejecutar npm install en la carpeta simple-api.
+  workingDirectory: '$(Build.ArtifactStagingDirectory)/simple-api'  # Cambiar al directorio de destino antes de ejecutar el comando npm install.
