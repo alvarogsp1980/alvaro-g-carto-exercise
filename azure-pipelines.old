@@ -40,4 +40,4 @@ steps:
     artifactName: simple-api
     targetPath: '$(Build.ArtifactStagingDirectory)'
     publishLocation: 'pipeline'
-  displayName: 'Publish npm artifact'
+  displayName: 'Publish simple-api artifact'

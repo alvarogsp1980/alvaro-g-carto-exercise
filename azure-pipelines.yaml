@@ -1,0 +1,94 @@
+trigger:
+ - develop
+ - qa
+ - production
+
+pool:
+  vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
+
+variables:
+- name: dockerfile
+  value: '$(Build.SourcesDirectory)/local-dev/Dockerfile'  # Cambia la ruta según la ubicación real del Dockerfile
+
+- name: containerName
+  value: 'simple-api'
+
+stages:
+- stage: BuildAndTest
+  displayName: 'Build and Test'
+  jobs:
+  - job: BuildAndTestJob
+    displayName: 'Build and Test Job'
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '>=18.10'
+      displayName: 'Install Node.js'
+
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: 'simple-api'
+        Contents: '**'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)/simple-api'
+      displayName: 'Copy simple-api folder'
+
+    - script: |
+        cd $(Build.ArtifactStagingDirectory)/simple-api
+        npm install
+        yarn install
+      displayName: 'Install npm and yarn'
+
+    - script: |
+        cd $(Build.ArtifactStagingDirectory)/simple-api
+        yarn run test
+      displayName: 'Run Unit Tests'
+
+    - task: PublishPipelineArtifact@1
+      inputs:
+        artifactName: simple-api
+        targetPath: '$(Build.ArtifactStagingDirectory)'
+        publishLocation: 'pipeline'
+      displayName: 'Publish simple-api artifact'
+
+# - stage: BuildDockerImage
+#   displayName: 'Build Docker Image'
+#   jobs:
+#   - job: BuildDockerImageJob
+#     displayName: 'Build Docker Image Job'
+#     pool:
+#       vmImage: ubuntu-latest
+#     steps:
+#     - task: UsePythonVersion@0
+#       inputs:
+#         versionSpec: '2.x'
+#         addToPath: true
+
+#     - script: |
+#         docker build -t $(containerName):$(environment) -f $(dockerfile) .
+#         echo '$(GCP_Credentials)' > gcp-credentials.json
+#       displayName: 'Build Docker Image'
+
+#     - task: Docker@2
+#       inputs:
+#         containerRegistry: 'your-container-registry-service-connection'  # Cambia esto por tu servicio de registro de contenedores
+#         repository: 'your-docker-repo-name'
+#         command: 'push'
+#         Dockerfile: $(dockerfile)
+#         tags: |
+#           $(containerName):$(environment)
+#       displayName: 'Push Docker Image'
+
+# - stage: PublishDockerImage
+#   displayName: 'Publish Docker Image'
+#   jobs:
+#   - job: PublishDockerImageJob
+#     displayName: 'Publish Docker Image Job'
+#     pool:
+#       vmImage: ubuntu-latest
+#     steps:
+#     - script: |
+#         docker tag $(containerName):$(environment) your-container-registry.azurecr.io/$(containerName):$(environment)
+#         docker push your-container-registry.azurecr.io/$(containerName):$(environment)
+#       displayName: 'Tag and Push Docker Image'
