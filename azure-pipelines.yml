@@ -27,21 +27,12 @@ stages:
         inputs:
           secureFile: 'gcp-creds-dev.json'
 
-      - bash: |
-          # Leer el contenido del archivo JSON descargado
-          creds_content=$(cat $(Agent.TempDirectory)/gcp-creds-dev.json)
-
-          # Establecer la variable de entorno GOOGLE_CREDENTIALS con el contenido
-          echo "GOOGLE_CREDENTIALS=$creds_content" >> $(Agent.ToolsDirectory)/setenv.sh
-        displayName: 'Set GOOGLE_CREDENTIALS Variable'
-        env:
-          AGENT_TOOLSDIRECTORY: $(Agent.ToolsDirectory)
-
       - script: |
-          # Verificar si la variable de entorno se ha configurado correctamente
-          echo "GOOGLE_CREDENTIALS: $GOOGLE_CREDENTIALS"
-        displayName: 'Verify GOOGLE_CREDENTIALS Variable'
-        
+          creds_content=$(cat $(GoogleCredentials.secureFilePath))
+          set "GOOGLE_CREDENTIALS=$creds_content"
+          echo $GOOGLE_CREDENTIALS
+        displayName: 'Set GOOGLE_CREDENTIALS Variable'
+
       - task: CopyFiles@2
         inputs:
           SourceFolder: 'ci-cd'
@@ -53,6 +44,7 @@ stages:
           cd $(Build.ArtifactStagingDirectory)/ci-cd
           ls -lra
           docker-compose -f docker-compose-dev.yml up -d
+          docker ps
           docker exec ci-cd-simple-api-dev echo GOOGLE_APPLICATION_CREDENTIALS
           docker exec ci-cd-simple-api-dev yarn run test
         displayName: 'Build and Test Dev'
