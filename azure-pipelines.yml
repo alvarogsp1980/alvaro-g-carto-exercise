@@ -4,10 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
 trigger:
-- main
-# - develop
-# - qa
-# - production
+ - develop
+ - qa
+ - production
 
 pool:
   vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
