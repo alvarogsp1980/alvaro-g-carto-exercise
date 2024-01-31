@@ -1,19 +1,23 @@
 trigger:
   - develop
- 
-pool:
-  vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 
-  stages:
+stages:
   - stage: Dev
+    displayName: Deploying and Testing simple-api DEV""
     jobs:
     - job: BuildAndTestDev
+      workspace:
+        clean: all
+
+      pool:
+        vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
+
       steps:
       - script: |
           docker-compose -p ci-cd-simple-api-dev -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
           docker exec ci-cd-simple-api-dev yarn run test
         displayName: 'Build and Test Dev'
-      # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
   
   # - stage: QA
   #   jobs:
