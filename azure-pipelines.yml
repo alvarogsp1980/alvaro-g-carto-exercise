@@ -28,7 +28,7 @@ stages:
           secureFile: 'gcp-creds-dev.json'
 
       - script: |
-          mv $(GoogleCredentials.secureFilePath)) '$(Build.ArtifactStagingDirectory)/google-sa.json'
+          mv $(GoogleCredentials.secureFilePath) '$(Build.ArtifactStagingDirectory)/google-sa.json'
           cat $(Build.ArtifactStagingDirectory)/google-sa.json
         displayName: 'Set GOOGLE_CREDENTIALS Variable'
 
