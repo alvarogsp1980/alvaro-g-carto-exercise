@@ -1,87 +1,48 @@
+# ado-pipeline-simple-api.yml
+# Version: 0.0.1
+# Created by: Alvaro Garcia
+
+name: "$(Date:yyyy-MM-dd)_simple-api-build-and-test-$(Rev:.r)"
+
 trigger:
- - develop
- - qa
- - production
-
-pool:
-  vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
-
-variables:
-- name: dockerfile
-  value: '$(Build.SourcesDirectory)/local-dev/Dockerfile'  # Cambia la ruta según la ubicación real del Dockerfile
-
-- name: containerName
-  value: 'simple-api'
+  - develop
 
 stages:
-- stage: BuildAndTest
-  displayName: 'Build and Test'
-  jobs:
-  - job: BuildAndTestJob
-    displayName: 'Build and Test Job'
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - task: NodeTool@0
-      inputs:
-        versionSpec: '>=18.10'
-      displayName: 'Install Node.js'
+  - stage: Dev
+    displayName: Deploying and Testing simple-api DEV
+    jobs:
+    - job: BuildAndTestDev
+      displayName: 'Building Deploying and Testing simple-api'
+      workspace:
+        clean: all
 
-    - task: CopyFiles@2
-      inputs:
-        SourceFolder: 'simple-api'
-        Contents: '**'
-        TargetFolder: '$(Build.ArtifactStagingDirectory)/simple-api'
-      displayName: 'Copy simple-api folder'
+      pool:
+        vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 
-    - script: |
-        cd $(Build.ArtifactStagingDirectory)/simple-api
-        npm install
-        yarn install
-      displayName: 'Install npm and yarn'
-
-    - script: |
-        cd $(Build.ArtifactStagingDirectory)/simple-api
-        yarn run test
-      displayName: 'Run Unit Tests'
-
-    - task: PublishPipelineArtifact@1
-      inputs:
-        artifactName: simple-api
-        targetPath: '$(Build.ArtifactStagingDirectory)'
-        publishLocation: 'pipeline'
-      displayName: 'Publish simple-api artifact'
-
-- stage: builddockerimage
-  displayname: 'build docker image'
-  jobs:
-  - job: builddockerimagejob
-    displayname: 'build docker image job'
-    pool:
-      vmimage: ubuntu-latest
-    steps:
-    - script: |
-        docker build -t $(containername):$(environment) -f $(dockerfile) .
-        echo '$(gcp_credentials)' > gcp-credentials.json
-      displayname: 'build docker image'
-    - task: docker@2
-      inputs:
-        containerregistry: 'your-container-registry-service-connection'  # cambia esto por tu servicio de registro de contenedores
-        repository: 'your-docker-repo-name'
-        command: 'push'
-        dockerfile: $(dockerfile)
-        tags: |
-          $(containername):$(environment)
-      displayname: 'push docker image'
-- stage: publishdockerimage
-  displayname: 'publish docker image'
-  jobs:
-  - job: publishdockerimagejob
-    displayname: 'publish docker image job'
-    pool:
-      vmimage: ubuntu-latest
-    steps:
-    - script: |
-        docker tag $(containername):$(environment) your-container-registry.azurecr.io/$(containername):$(environment)
-        docker push your-container-registry.azurecr.io/$(containername):$(environment)
-      displayname: 'tag and push docker image'
+      steps:
+      - script: |
+          docker-compose -p ci-cd-simple-api-dev -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
+          docker exec ci-cd-simple-api-dev yarn run test
+        displayName: 'Build and Test Dev'
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+  
+  # - stage: QA
+  #   jobs:
+  #   - job: BuildAndTestQA
+  #     steps:
+  #     - script: |
+  #         docker-compose -p ci-cd-simple-api-qa -f docker-compose-qa.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_QA} up -d
+  #         docker exec ci-cd-simple-api-qa yarn run test
+  #       displayName: 'Build and Test QA'
+  #     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
+  
+  # - stage: Prod
+  #   jobs:
+  #   - job: BuildAndTestProd
+  #     steps:
+  #     - script: |
+  #         docker-compose -p ci-cd-simple-api-prod -f docker-compose-prod.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_PROD} up -d
+  #         docker exec ci-cd-simple-api-prod yarn run test
+  #       displayName: 'Build and Test Prod'
+  #     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/production'))
+  
