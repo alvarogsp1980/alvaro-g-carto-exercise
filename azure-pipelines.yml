@@ -30,7 +30,7 @@ stages:
       - script: |
           mkdir '$(Build.ArtifactStagingDirectory)/ci-cd'
           mv $(GoogleCredentials.secureFilePath) '$(Build.ArtifactStagingDirectory)/ci-cd/google-sa.json'
-          cat $(Build.ArtifactStagingDirectory)/google-sa.json
+          cat $(Build.ArtifactStagingDirectory)/ci-cd/google-sa.json
         displayName: 'Set GOOGLE_CREDENTIALS Variable'
 
       - task: CopyFiles@2
