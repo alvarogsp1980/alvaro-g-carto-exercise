@@ -18,7 +18,7 @@ RUN yarn install
 COPY ./simple-api .
 
 # Copy the google-sa.json file to the container
-COPY ./google-sa.json /usr/src/app/
+COPY ./google-sa.json ./
 
 # Expose the port the app runs on
 EXPOSE 3000
