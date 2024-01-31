@@ -1,0 +1,9 @@
+version: '3'
+services:
+  simple-api-dev:
+    image: simple-api:dev
+    ports:
+      - "8081:3000"
+    environment:
+      - NODE_ENV=dev # TODO: MIRAR CÓMO ELIMINARLA EN ESTE ENTORNO
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDENTIALS}

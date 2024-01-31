@@ -52,43 +52,40 @@ stages:
         publishLocation: 'pipeline'
       displayName: 'Publish simple-api artifact'
 
-# - stage: BuildDockerImage
-#   displayName: 'Build Docker Image'
-#   jobs:
-#   - job: BuildDockerImageJob
-#     displayName: 'Build Docker Image Job'
-#     pool:
-#       vmImage: ubuntu-latest
-#     steps:
-#     - task: UsePythonVersion@0
-#       inputs:
-#         versionSpec: '2.x'
-#         addToPath: true
-
-#     - script: |
-#         docker build -t $(containerName):$(environment) -f $(dockerfile) .
-#         echo '$(GCP_Credentials)' > gcp-credentials.json
-#       displayName: 'Build Docker Image'
-
-#     - task: Docker@2
-#       inputs:
-#         containerRegistry: 'your-container-registry-service-connection'  # Cambia esto por tu servicio de registro de contenedores
-#         repository: 'your-docker-repo-name'
-#         command: 'push'
-#         Dockerfile: $(dockerfile)
-#         tags: |
-#           $(containerName):$(environment)
-#       displayName: 'Push Docker Image'
-
-# - stage: PublishDockerImage
-#   displayName: 'Publish Docker Image'
-#   jobs:
-#   - job: PublishDockerImageJob
-#     displayName: 'Publish Docker Image Job'
-#     pool:
-#       vmImage: ubuntu-latest
-#     steps:
-#     - script: |
-#         docker tag $(containerName):$(environment) your-container-registry.azurecr.io/$(containerName):$(environment)
-#         docker push your-container-registry.azurecr.io/$(containerName):$(environment)
-#       displayName: 'Tag and Push Docker Image'
+- stage: builddockerimage
+  displayname: 'build docker image'
+  jobs:
+  - job: builddockerimagejob
+    displayname: 'build docker image job'
+    pool:
+      vmimage: ubuntu-latest
+    steps:
+    - task: usepythonversion@0
+      inputs:
+        versionspec: '2.x'
+        addtopath: true
+    - script: |
+        docker build -t $(containername):$(environment) -f $(dockerfile) .
+        echo '$(gcp_credentials)' > gcp-credentials.json
+      displayname: 'build docker image'
+    - task: docker@2
+      inputs:
+        containerregistry: 'your-container-registry-service-connection'  # cambia esto por tu servicio de registro de contenedores
+        repository: 'your-docker-repo-name'
+        command: 'push'
+        dockerfile: $(dockerfile)
+        tags: |
+          $(containername):$(environment)
+      displayname: 'push docker image'
+- stage: publishdockerimage
+  displayname: 'publish docker image'
+  jobs:
+  - job: publishdockerimagejob
+    displayname: 'publish docker image job'
+    pool:
+      vmimage: ubuntu-latest
+    steps:
+    - script: |
+        docker tag $(containername):$(environment) your-container-registry.azurecr.io/$(containername):$(environment)
+        docker push your-container-registry.azurecr.io/$(containername):$(environment)
+      displayname: 'tag and push docker image'

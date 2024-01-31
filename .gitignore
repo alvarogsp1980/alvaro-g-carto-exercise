@@ -39,3 +39,6 @@ Thumbs.db
 /terraform/.terraform
 *.tfstate
 *.tfstate.*
+
+# Creds
+carto_creds.json
