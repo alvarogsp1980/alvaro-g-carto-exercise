@@ -3,6 +3,7 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
+# https://www.youtube.com/watch?v=z_4sMQKE_zw
 trigger:
 - main
 
@@ -17,15 +18,10 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    SourceFolder: './simple-api'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)/simple-api'
-
-- task: CopyFiles@2
-  inputs:
     SourceFolder: 'simple-api'
     Contents: '**'
     TargetFolder: '$(Build.ArtifactStagingDirectory)/simple-api'
+  displayName: 'Copy simple-api folder'
 
 - script: |
     cd $(Build.ArtifactStagingDirectory)/simple-api
@@ -37,3 +33,8 @@ steps:
     cd $(Build.ArtifactStagingDirectory)/simple-api
     yarn run test
   displayName: 'Run Unit Tests'
+
+- task: PublishTestResults@2
+  inputs: 
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**\TEST-*.xml'
