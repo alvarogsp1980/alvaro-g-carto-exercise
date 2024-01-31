@@ -20,6 +20,28 @@ stages:
         vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 
       steps:
+
+      - task: DownloadSecureFile@1
+        name: GoogleCredentials
+        displayName: 'Download GOOGLE_CREDENTIALS'
+        inputs:
+          secureFile: 'gcp-creds-dev.json'
+
+      - bash: |
+          # Leer el contenido del archivo JSON descargado
+          creds_content=$(cat $(Agent.TempDirectory)/gcp-creds-dev.json)
+
+          # Establecer la variable de entorno GOOGLE_CREDENTIALS con el contenido
+          echo "GOOGLE_CREDENTIALS=$creds_content" >> $(Agent.ToolsDirectory)/setenv.sh
+        displayName: 'Set GOOGLE_CREDENTIALS Variable'
+        env:
+          AGENT_TOOLSDIRECTORY: $(Agent.ToolsDirectory)
+
+      - script: |
+          # Verificar si la variable de entorno se ha configurado correctamente
+          echo "GOOGLE_CREDENTIALS: $GOOGLE_CREDENTIALS"
+        displayName: 'Verify GOOGLE_CREDENTIALS Variable'
+        
       - task: CopyFiles@2
         inputs:
           SourceFolder: 'ci-cd'
