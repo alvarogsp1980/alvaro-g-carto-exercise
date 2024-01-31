@@ -5,7 +5,7 @@
 name: "$(Date:yyyy-MM-dd)_simple-api-build-and-test-$(Rev:.r)"
 
 trigger:
-  - develop
+  - main
 
 stages:
   - stage: Dev
@@ -24,7 +24,7 @@ stages:
           docker-compose -p ci-cd-simple-api-dev -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
           docker exec ci-cd-simple-api-dev yarn run test
         displayName: 'Build and Test Dev'
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+        # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
   
   # - stage: QA
   #   jobs:
