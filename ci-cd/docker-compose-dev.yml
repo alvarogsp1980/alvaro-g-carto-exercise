@@ -9,5 +9,4 @@ services:
       - "8080:3000"
     environment:
       - NODE_ENV=development
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDENTIALS}
     command: ["yarn", "run", "start"]

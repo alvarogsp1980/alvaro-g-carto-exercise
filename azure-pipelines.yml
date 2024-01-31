@@ -49,7 +49,6 @@ stages:
 
       - script: |
           cd $(Build.ArtifactStagingDirectory)/ci-cd
-          ls -lra
           docker-compose -f docker-compose-${{ parameters.environment }}.yml up -d
           docker exec ci-cd-simple-api-${{ parameters.environment }} yarn run test
         displayName: 'Build and Test Dev'
