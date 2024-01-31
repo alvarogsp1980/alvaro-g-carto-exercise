@@ -30,7 +30,8 @@ stages:
       - script: |
           cd $(Build.ArtifactStagingDirectory)/ci-cd
           ls -lra
-          docker-compose -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
+          docker-compose -f docker-compose-dev.yml up -d
+          docker exec ci-cd-simple-api-dev echo GOOGLE_APPLICATION_CREDENTIALS
           docker exec ci-cd-simple-api-dev yarn run test
         displayName: 'Build and Test Dev'
         # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
