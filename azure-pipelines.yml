@@ -3,11 +3,11 @@
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
 
-# https://www.youtube.com/watch?v=z_4sMQKE_zw
 trigger:
-- develop
-- qa
-- production
+- main
+# - develop
+# - qa
+# - production
 
 pool:
   vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
