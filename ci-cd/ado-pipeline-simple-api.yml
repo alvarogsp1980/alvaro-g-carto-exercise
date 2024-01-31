@@ -4,45 +4,53 @@
 
 name: "$(Date:yyyy-MM-dd)_simple-api-build-and-test-$(Rev:.r)"
 
-trigger:
-  - main
+trigger: none
+
+parameters:
+  - name: environment
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - qa
+      - prod
 
 stages:
-  - stage: Dev
-    displayName: Deploying and Testing simple-api DEV
-    jobs:
-    - job: BuildAndTestDev
-      displayName: 'Building Deploying and Testing simple-api'
-      workspace:
-        clean: all
+  - ${{ if eq(parameters.isStackDeploy, "dev")}}:  
+    - stage: Dev
+      displayName: 'Deploying and Testing simple-api ${{ parameters.environment }}'
+      jobs:
+      - job: BuildAndTest
+        displayName: 'Building, Deploying and Testing simple-api'
+        workspace:
+          clean: all
 
-      pool:
-        vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
+        pool:
+          vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 
-      steps:
-      - script: |
-          docker-compose -p ci-cd-simple-api-dev -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
-          docker exec ci-cd-simple-api-dev yarn run test
-        displayName: 'Build and Test Dev'
-        # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
-  
-  # - stage: QA
-  #   jobs:
-  #   - job: BuildAndTestQA
-  #     steps:
-  #     - script: |
-  #         docker-compose -p ci-cd-simple-api-qa -f docker-compose-qa.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_QA} up -d
-  #         docker exec ci-cd-simple-api-qa yarn run test
-  #       displayName: 'Build and Test QA'
-  #     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
-  
-  # - stage: Prod
-  #   jobs:
-  #   - job: BuildAndTestProd
-  #     steps:
-  #     - script: |
-  #         docker-compose -p ci-cd-simple-api-prod -f docker-compose-prod.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_PROD} up -d
-  #         docker exec ci-cd-simple-api-prod yarn run test
-  #       displayName: 'Build and Test Prod'
-  #     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/production'))
-  
+        steps:
+
+        - task: DownloadSecureFile@1
+          name: GoogleCredentials
+          displayName: 'Download GOOGLE_CREDENTIALS'
+          inputs:
+            secureFile: 'gcp-creds-${{ parameters.environment }}.json'
+
+        - script: |
+            mkdir '$(Build.ArtifactStagingDirectory)/ci-cd'
+            mv $(GoogleCredentials.secureFilePath) '$(Build.ArtifactStagingDirectory)/ci-cd/google-sa.json'
+          displayName: 'Copying google-sa.json for env: ${{ parameters.environment }}'
+
+        - task: CopyFiles@2
+          inputs:
+            SourceFolder: 'ci-cd'
+            Contents: '**'
+            TargetFolder: '$(Build.ArtifactStagingDirectory)/ci-cd'
+          displayName: 'Copy ci-cd folder'
+
+        - script: |
+            cd $(Build.ArtifactStagingDirectory)/ci-cd
+            ls -lra
+            docker-compose -f docker-compose-${{ parameters.environment }}.yml up -d
+            docker exec ci-cd-simple-api-${{ parameters.environment }} yarn run test
+          displayName: 'Build and Test Dev'
