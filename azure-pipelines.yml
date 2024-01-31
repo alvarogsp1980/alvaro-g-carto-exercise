@@ -60,10 +60,6 @@ stages:
     pool:
       vmimage: ubuntu-latest
     steps:
-    - task: usepythonversion@0
-      inputs:
-        versionspec: '2.x'
-        addtopath: true
     - script: |
         docker build -t $(containername):$(environment) -f $(dockerfile) .
         echo '$(gcp_credentials)' > gcp-credentials.json

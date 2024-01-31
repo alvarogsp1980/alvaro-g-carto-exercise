@@ -1,0 +1,37 @@
+trigger:
+  - '*'
+
+pool:
+  vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
+
+  stages:
+  - stage: Dev
+    jobs:
+    - job: BuildAndTestDev
+      steps:
+      - script: |
+          docker-compose -p ci-cd-simple-api-dev -f docker-compose-dev.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_DEV} up -d
+          docker exec ci-cd-simple-api-dev yarn run test
+        displayName: 'Build and Test Dev'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/dev'))
+  
+  - stage: QA
+    jobs:
+    - job: BuildAndTestQA
+      steps:
+      - script: |
+          docker-compose -p ci-cd-simple-api-qa -f docker-compose-qa.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_QA} up -d
+          docker exec ci-cd-simple-api-qa yarn run test
+        displayName: 'Build and Test QA'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/qa'))
+  
+  - stage: Prod
+    jobs:
+    - job: BuildAndTestProd
+      steps:
+      - script: |
+          docker-compose -p ci-cd-simple-api-prod -f docker-compose-prod.yml -e GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDS_PROD} up -d
+          docker exec ci-cd-simple-api-prod yarn run test
+        displayName: 'Build and Test Prod'
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/production'))
+  

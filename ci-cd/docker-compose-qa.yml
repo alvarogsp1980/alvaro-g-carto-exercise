@@ -1,9 +1,12 @@
 version: '3'
 services:
   simple-api-dev:
-    image: simple-api:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8081:3000"
     environment:
-      - NODE_ENV=dev # TODO: MIRAR CÓMO ELIMINARLA EN ESTE ENTORNO
+      - NODE_ENV=development
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_CREDENTIALS}
+    command: ["yarn", "run", "start:watch"]
