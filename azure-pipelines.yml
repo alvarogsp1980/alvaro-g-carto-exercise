@@ -5,16 +5,14 @@
 
 # https://www.youtube.com/watch?v=z_4sMQKE_zw
 trigger:
-- main
+- develop
+- qa
+- production
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: ubuntu-latest # Remember to mention in README.md which software is included here to keep in mind. (https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md)
 
 steps:
-- script: |
-    docker version  
-  displayName: 'Show docker version'
-
 - task: NodeTool@0
   inputs:
     versionSpec: '>=18.10'
@@ -37,3 +35,10 @@ steps:
     cd $(Build.ArtifactStagingDirectory)/simple-api
     yarn run test
   displayName: 'Run Unit Tests'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    artifactName: simple-api
+    targetPath: '$(Build.ArtifactStagingDirectory)'
+    publishLocation: 'pipeline'
+  displayName: 'Publish npm artifact'
